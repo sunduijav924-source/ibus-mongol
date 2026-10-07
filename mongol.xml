@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <name>org.freedesktop.IBus.Mongol</name>
+  <description>Mongol Latin to Cyrillic IME</description>
+  <version>1.0</version>
+  <license>GPL</license>
+  <author>Sunduijav</author>
+  <homepage>http://localhost</homepage>
+  <exec>/usr/lib/ibus/ibus-engine-mongol --ibus</exec>
+  <textdomain>ibus-mongol</textdomain>
+  <engines>
+    <engine>
+      <name>mongol</name>
+      <language>mn</language>
+      <license>GPL</license>
+      <author>Sunduijav </author>
+      <icon>ibus-keyboard</icon>
+      <layout>us</layout>
+      <longname>Mongolian (Mongol)</longname>
+      <description>Latin to Cyrillic Converter (Space to commit)</description>
+      <rank>99</rank>
+    </engine>
+  </engines>
+</component>
