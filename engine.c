@@ -116,18 +116,16 @@ static void update_preedit(MongolEngine *engine) {
     }
 }
 
-static void commit_buffer(MongolEngine *engine) {
-   if (engine->latin_buffer->len == 0) return;
+static void commit_buffer(MongolEngine *engine, const gchar *suffix) {
+    if (engine->latin_buffer->len == 0) return;
     GString *cyr = convert_to_cyrillic(engine->latin_buffer);
+    if (suffix) g_string_append(cyr, suffix);
     IBusText *text = ibus_text_new_from_string(cyr->str);
-    
-    // 1. Эхлээд буферээ хоосолж, дэлгэц дээрх зураастай түр текстийг устгах
+
     g_string_erase(engine->latin_buffer, 0, -1);
     update_preedit(engine);
-    
-    // 2. Дэлгэц түр текстээс цэвэрлэгдсэний дараа жинхэнэ үгээ буулгах
+
     ibus_engine_commit_text(IBUS_ENGINE(engine), text);
-    
     g_string_free(cyr, TRUE);
 }
 
@@ -140,7 +138,7 @@ static gboolean mongol_engine_process_key_event(IBusEngine *ibusengine, guint ke
     }
 
     if (state & (IBUS_CONTROL_MASK | IBUS_MOD1_MASK)) {
-        commit_buffer(engine); 
+        commit_buffer(engine, NULL); 
         return FALSE; 
     }
 
@@ -153,16 +151,20 @@ static gboolean mongol_engine_process_key_event(IBusEngine *ibusengine, guint ke
         return FALSE; 
     }
 
-    if (keyval == IBUS_KEY_space || keyval == IBUS_KEY_Return) {
-        if (engine->latin_buffer->len > 0) {
-            commit_buffer(engine);
-            IBusText *space_text = ibus_text_new_from_string(keyval == IBUS_KEY_space ? " " : "\n");
-            ibus_engine_commit_text(ibusengine, space_text);
-            return TRUE;
-        }
-        return FALSE;
+    if (keyval == IBUS_KEY_space) {
+    if (engine->latin_buffer->len > 0) {
+        commit_buffer(engine, " ");
+        return TRUE;
     }
+    return FALSE;
+}
 
+if (keyval == IBUS_KEY_Return) {
+    if (engine->latin_buffer->len > 0) {
+        commit_buffer(engine, NULL);
+    }
+    return FALSE;   // let the real Enter key through
+}
     // ЗАСВАР 2: Том (A-Z) болон Жижиг (a-z) үсгүүдийг хоёуланг нь буфферт авах
     if ((keyval >= IBUS_KEY_a && keyval <= IBUS_KEY_z) || 
         (keyval >= IBUS_KEY_A && keyval <= IBUS_KEY_Z)) {
@@ -185,7 +187,7 @@ static gboolean mongol_engine_process_key_event(IBusEngine *ibusengine, guint ke
 
     // Хэрэв өөр товч (цэг, таслал, тоо) дарагдвал бичиж байсан үгээ батлаад цааш хэвийн шилжүүлэх
     if (engine->latin_buffer->len > 0) {
-        commit_buffer(engine);
+        commit_buffer(engine, NULL);
     }
 
     return FALSE; 
