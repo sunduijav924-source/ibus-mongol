@@ -117,21 +117,24 @@ static void update_preedit(MongolEngine *engine) {
 }
 
 static void commit_buffer(MongolEngine *engine) {
-    if (engine->latin_buffer->len == 0) return;
+   if (engine->latin_buffer->len == 0) return;
     GString *cyr = convert_to_cyrillic(engine->latin_buffer);
     IBusText *text = ibus_text_new_from_string(cyr->str);
     
-    ibus_engine_commit_text(IBUS_ENGINE(engine), text);
-    
+    // 1. Эхлээд буферээ хоосолж, дэлгэц дээрх зураастай түр текстийг устгах
     g_string_erase(engine->latin_buffer, 0, -1);
     update_preedit(engine);
+    
+    // 2. Дэлгэц түр текстээс цэвэрлэгдсэний дараа жинхэнэ үгээ буулгах
+    ibus_engine_commit_text(IBUS_ENGINE(engine), text);
+    
     g_string_free(cyr, TRUE);
 }
 
 static gboolean mongol_engine_process_key_event(IBusEngine *ibusengine, guint keyval, guint keycode, guint state) {
     MongolEngine *engine = MONGOL_ENGINE(ibusengine);
 
-    // ЗАСВАР 1: Товчлуур тавигдах (Release) үйлдлийг алгасах (Давхар бичигдэхийг зогсооно)
+    // ЗАСВАР 1:Давхар бичигдэхийг зогсооно 
     if (state & IBUS_RELEASE_MASK) {
         return FALSE; 
     }
